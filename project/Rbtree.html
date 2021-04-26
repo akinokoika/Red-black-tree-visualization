@@ -19,15 +19,25 @@
             <p><label for="show">{{ info }}</label><p>
         </article>
         <div id="show-box" class="sm-3 col">
-            <input v-model="info" type="number" min="1" max="999">
+            <input v-model="info" type="number" min="1" max="999" :disabled="!input_status">
         </div>
-        <div class="sm-4 col">
+        <div class="sm-3 col">
             <button @click="hinsert" class="border border-danger btn-danger-outline" :disabled="!info">insert</button>
             <button @click="hdel" class="border border-danger btn-danger-outline" :disabled="!info">del</button>
         </div>
+        <div class="sm-1 col">
+        <fieldset class="form-group" :disabled="!input_status">
+            <label for="paper_switch" class="paper-switch-tile">
+                <input id="paper_switch" name="paper_switch" type="checkbox" v-model="checked"/>
+                <div class="paper-switch-tile-card border">
+                    <div class="paper-switch-tile-card-front border background-primary">base</div>
+                    <div class="paper-switch-tile-card-back border background-danger">cartoon</div>
+                </div>
+            </label>
+        </fieldset></div>
         <article class="article">
-            <p class="article-meta"><span class="badge" :class={success:nature_4}>{{ nature_4 }}</span> Properties 4 (children of red are black)</p>
-            <p class="article-meta"><span class="badge" :class={success:nature_5}>{{ nature_5 }}</span> Properties 5 (same number of black on path)</p>
+            <p class="article-meta" popover-right="If a node is red, then both its children are black."><span class="badge" :class={success:nature_4}>{{ nature_4 }}</span> Properties 4</p>
+            <p class="article-meta" popover-right="Every path from a given node to any of its descendant NIL leaves goes through the same number of black nodes."><span class="badge" :class={success:nature_5}>{{ nature_5 }}</span> Properties 5</p>
         </article>
     </div>
     <div id="box"></div>
@@ -37,14 +47,16 @@
             data() {
                 return {
                     info: '',
+                    input_status: true,
                     nature_4: '',
                     nature_5: '',
+                    checked: false,
                 }
             },
             methods: {
                 hinsert() {
                     t = insert(Number(this.info), t)
-                    /* t = insert(Number(Math.ceil(Math.random()*50)), t) */
+                    // t = insert(Number(Math.ceil(Math.random()*50)), t)
                     layer.destroyChildren()
                     draw(t,0,0)
                     stage.batchDraw()
@@ -116,11 +128,11 @@
                 this.right = r
                 this.parent = p
 
-                this.group = null
-                this.left_arrow = null
-                this.right_arrow = null
-                this.left_points = null
-                this.right_points = null
+                this.group = nullnode
+                this.left_arrow = nullnode
+                this.right_arrow = nullnode
+                this.left_points = nullnode
+                this.right_points = nullnode
             }
         }
 
@@ -130,7 +142,6 @@
         }
 
         function rotate(kg, direction) {
-            //rotate_cartoon(kg, direction)
             var kf, kgf
             if (direction == ll)
             {
@@ -182,7 +193,10 @@
         }
 
         function insert(x, root){
-            //insert_cartoon(x, root)
+            if (handle.checked == true) {
+                insert_cartoon(x, root)
+            }
+            
             var h, f, g, u, p
             if (root.parent == nullnode)
             {
@@ -358,7 +372,10 @@
 
         function del(x, root)
         {
-            del_cartoon(x, root)
+            if (handle.checked == true) {
+                del_cartoon(x, root)
+            }
+            
             var p, r, f, b, c;
 
             p = findnode(x, root);
@@ -399,19 +416,32 @@
                     if (f.left == p)
                     {
                         b.color = black;
-                        b.left.color = red;
+                        f.color = red;
                         root = rotate(f, ll);
                     }
                     else if (f.right == p)
                     {
                         b.color = black;
-                        b.right.color = red;
+                        f.color = red;
                         root = rotate(f, rr);
+                    }
+
+                    if (f.left == p)
+                    {
+                        b = f.right;
+                    }
+                    else if (f.right == p)
+                    {
+                        b = f.left;
+                    }
+                    if (b.left == nullnode && b.right == nullnode)
+                    {
+                        f.color = black;
+                        b.color = red;
                     }
                 }
                 if (b.color == black)
                 {
-
                     if (f.left == p)
                     {
                         if (b.left != nullnode && b.right == nullnode)
@@ -602,9 +632,9 @@
 
         var layer = new Konva.Layer()
 
-        function create_group_base(cex, cey, rad, cecol, data) {
+        function create_group_base(cex, cey, rad, cecol, data, moble) {
             var group_base = new Konva.Group({
-                draggable: true
+                draggable: moble
             })
             var circle = new Konva.Circle({
                 x: cex,
@@ -667,7 +697,7 @@
                 cecol = '#000000'
             }
             var circle_rad = 20
-            root.group = create_group_base(cex, cey, circle_rad, cecol, root.data)
+            root.group = create_group_base(cex, cey, circle_rad, cecol, root.data, true)
             layer.add(root.group)
                 
             pa_cex = root.parent.group.children[0].attrs.x
@@ -765,7 +795,7 @@
                 var p_node_arrow = p_node.right_arrow
             }
             
-            if(p_node_arrow == null){
+            if(p_node_arrow == nullnode){
                 let p_cex = p_node.group.children[0].attrs.x
                 let p_cey = p_node.group.children[0].attrs.y
                 let p_radius = p_node.group.children[0].attrs.radius
@@ -792,7 +822,7 @@
         }
 
         function get_tween_para(arrow_local, next_node) {
-            if(next_node == null){
+            if(next_node == nullnode){
                 var [pox, poy] = [0, 0]
             }else{
                 var n_arx = next_node.group.children[0].attrs.x
@@ -911,9 +941,7 @@
             })
         }
 
-        function insert_cartoon(x, root){
-            var h, f, g, u, p
-
+        function cartoon_init() {
             layer.destroyChildren()
             draw(t,0,0)
             layer.batchDraw()
@@ -925,16 +953,28 @@
             var tl = new TimelineLite({
                 onStart: () => {
                     layer.hide();
+                    handle.info = '';
+                    handle.input_status = false;
                 },
                 onComplete: () => {
                     layer_local.destroy();
                     layer.show();
                     layer.batchDraw();
+                    handle.input_status = true;
                 },
             });
 
-            var group_base_local = create_group_base(width/2, 50, 20, '#ff3535', x)
+            return [layer_local, tl]
+        }
+
+        function insert_cartoon(x, root){
+            var h, f, g, u, p
+
+            var [layer_local, tl] = cartoon_init()
+
+            var group_base_local = create_group_base(width/2, 50, 20, '#ff3535', x, false)
             layer_local.add(group_base_local)
+
             stage.add(layer_local);
 
             group_base_opacity_cartoon(group_base_local, tl)
@@ -1079,12 +1119,13 @@
 
         function layer_local_find_group(node, layer_local) {
             var Group_list = layer_local.find('Group')
+            var Group_node = nullnode
             for (let key in Group_list) {
                 if(Group_list[key] == Group_list.length){
                     break
                 }
                 if(node.data == Number(Group_list[key].children[1].attrs.text)){
-                    var Group_node = Group_list[key]
+                    Group_node = Group_list[key]
                 }
             }
             return Group_node
@@ -1099,10 +1140,15 @@
             })
         }
 
+        function assign_data_cartoon_tl(p_group, n_group) {
+            p_group.children[1].text(n_group.children[1].text())
+        }
+
         function assign_data_cartoon(p_node, n_node, timeline, layer_local) {
             var p_group = layer_local_find_group(p_node, layer_local)
             var n_group = layer_local_find_group(n_node, layer_local)
-            p_group.children[1].text(n_group.children[1].text())
+            // p_group.children[1].text(n_group.children[1].text())
+            timeline.call(assign_data_cartoon_tl, [p_group, n_group])
         }
 
         function get_node_color(p_node, layer_local) {
@@ -1119,29 +1165,13 @@
         {
             var p, r, f, b, c;
 
-            layer.destroyChildren()
-            draw(t,0,0)
-            layer.batchDraw()
-            stage.batchDraw()
+            var [layer_local, tl] = cartoon_init()
 
-            var layer_local = layer.clone();
-            handle.drag_switch(layer_local)
             stage.add(layer_local);
-
-            var tl = new TimelineLite({
-                onStart: () => {
-                    layer.hide();
-                },
-                onComplete: () => {
-                    layer_local.destroy();
-                    layer.show();
-                    layer.batchDraw();
-                },
-            });
 
             p = findnode(x, root);
             if (root.left == nullnode && root.right == nullnode && p == root){
-                //del_opacity_cartoon(p, tl, layer_local)
+                del_opacity_cartoon(p, tl, layer_local)
                 return;
             }
             if (p == nullnode || root.parent == nullnode)
@@ -1159,7 +1189,7 @@
                 {
                     r = nextnode(p)
                 }
-                //p.data = r.data;
+                // p.data = r.data;
                 assign_data_cartoon(p, r, tl, layer_local)
                 p = r;
             }
@@ -1182,20 +1212,38 @@
                     if (f.left == p)
                     {
                         // b.color = black;
-                        // b.left.color = red;
+                        // f.color = red;
                         // root = rotate(f, ll);
                         change_color_cartoon(b, black, tl, layer_local)
-                        change_color_cartoon(b.left, red, tl, layer_local)
+                        change_color_cartoon(f, red, tl, layer_local)
                         rotate_cartoon(f, ll, tl, layer_local)
                     }
                     else if (f.right == p)
                     {
                         // b.color = black;
-                        // b.right.color = red;
+                        // f.color = red;
                         // root = rotate(f, rr);
                         change_color_cartoon(b, black, tl, layer_local)
-                        change_color_cartoon(b.right, red, tl, layer_local)
+                        change_color_cartoon(f, red, tl, layer_local)
                         rotate_cartoon(f, rr, tl, layer_local)
+                    }
+
+                    if (f.left == p)
+                    {
+                        // b = f.right;
+                        b = b.left
+                    }
+                    else if (f.right == p)
+                    {
+                        // b = f.left;
+                        b = b.right
+                    }
+                    if (b.left == nullnode && b.right == nullnode)
+                    {
+                        // f.color = black;
+                        // b.color = red;
+                        change_color_cartoon(f, black, tl, layer_local)
+                        change_color_cartoon(b, red, tl, layer_local)
                     }
                 }
                 // b.color == black
@@ -1211,8 +1259,10 @@
                             change_color_cartoon(b.left, black, tl, layer_local)
                             change_color_cartoon(b, red, tl, layer_local)
                             rotate_cartoon(b, rr, tl, layer_local)
+
                             // b = f.right;
-                            // b = b.left
+                            b = b.left
+                            
                         }
                         if ((b.left != nullnode && b.right != nullnode) || (b.right != nullnode))
                         {
@@ -1220,8 +1270,8 @@
                             // f.color = b.right.color = black;
                             // root = rotate(f, ll);
                             change_color_cartoon(b, f.color, tl, layer_local)
-                            change_color_cartoon(f, black, tl, layer_local)
                             change_color_cartoon(b.right, black, tl, layer_local)
+                            change_color_cartoon(f, black, tl, layer_local)
                             rotate_cartoon(f, ll, tl, layer_local)
                         }
                     }
@@ -1235,7 +1285,9 @@
                             change_color_cartoon(b.right, black, tl, layer_local)
                             change_color_cartoon(b, red, tl, layer_local)
                             rotate_cartoon(b, ll, tl, layer_local)
-                            b = f.left;
+
+                            // b = f.left;
+                            b = b.right
                         }
                         if((b.left != nullnode && b.right != nullnode) || (b.left != nullnode))
                         {
@@ -1243,8 +1295,8 @@
                             // f.color = b.left.color = black;
                             // root = rotate(f, rr);
                             change_color_cartoon(b, f.color, tl, layer_local)
-                            change_color_cartoon(f, black, tl, layer_local)
                             change_color_cartoon(b.left, black, tl, layer_local)
+                            change_color_cartoon(f, black, tl, layer_local)
                             rotate_cartoon(f, rr, tl, layer_local)
                         }
                     }
@@ -1349,19 +1401,11 @@
                     }
                 }
             }
-            /* if (p.parent.left == p)
-            {
-                p.parent.left = nullnode;
-            }
-            if (p.parent.right == p)
-            {
-                p.parent.right = nullnode;
-            }
 
-            return root; */
             del_opacity_cartoon(p, tl, layer_local)
         }
-        // Local complete time : Apr 25 2021
+        // Local complete time : Apr 26 2021
+        // Local commit : almost complete
         // Author: akinokoika
     </script>
 </script>
