@@ -44,6 +44,7 @@
             methods: {
                 hinsert() {
                     t = insert(Number(this.info), t)
+                    /* t = insert(Number(Math.ceil(Math.random()*50)), t) */
                     layer.destroyChildren()
                     draw(t,0,0)
                     stage.batchDraw()
@@ -129,7 +130,7 @@
         }
 
         function rotate(kg, direction) {
-            rotate_cartoon(kg, direction)
+            //rotate_cartoon(kg, direction)
             var kf, kgf
             if (direction == ll)
             {
@@ -181,6 +182,7 @@
         }
 
         function insert(x, root){
+            //insert_cartoon(x, root)
             var h, f, g, u, p
             if (root.parent == nullnode)
             {
@@ -318,57 +320,68 @@
             return fn;
         }
 
-        function nextnode(r)
+        function nextnode(p)
         {
-            if (r.right == nullnode)
-            {
-                while (r != r.parent.left)
-                {
-                    r = r.parent;
+            if (p.right != nullnode) {
+                p = p.right
+                while (p.left != nullnode) {
+                    p = p.left
                 }
-                r = r.parent;
+                return p
             }
-            else
-            {
-                r = r.right;
-                while (r.left != nullnode)
-                {
-                    r = r.left;
+            while (p.parent != p) {
+                if (p.parent.left == p) {
+                    return p
                 }
+                p = p.parent
             }
-            return r;
+            return p
+        }
+        
+        function prenode(p)
+        {
+            if (p.left != nullnode) {
+                p = p.left
+                while (p.right != nullnode) {
+                    p = p.right
+                }
+                return p
+            }
+            while (p.parent != p) {
+                if (p.parent.right == p) {
+                    return p
+                }
+                p = p.parent
+            }
+            return p
         }
 
         function del(x, root)
         {
+            del_cartoon(x, root)
             var p, r, f, b, c;
 
             p = findnode(x, root);
-            if (p == root){
+            if (root.left == nullnode && root.right == nullnode && p == root){
                 root = init();
             }
             if (p == nullnode || root.parent == nullnode)
             {
                 return root;
             }
-            if (p.left != nullnode && p.right != nullnode)
+            while (1)
             {
-                r = nextnode(p);
+                if (p.left == nullnode && p.right == nullnode)
+                {
+                    break;
+                }
+                r = prenode(p);
+                if (p == r)
+                {
+                    r = nextnode(p)
+                }
                 p.data = r.data;
                 p = r;
-            }
-            else if (p.left != nullnode || p.right != nullnode)
-            {
-                if (p.left != nullnode)
-                {
-                    p.data = p.left.data;
-                    p = p.left;
-                }
-                else if (p.right != nullnode)
-                {
-                    p.data = p.right.data;
-                    p = p.right;
-                }
             }
             if (p.color == black)
             {
@@ -398,32 +411,33 @@
                 }
                 if (b.color == black)
                 {
-                    if (b.left != nullnode && b.right == nullnode)
+
+                    if (f.left == p)
                     {
-                        if (f.left == p)
+                        if (b.left != nullnode && b.right == nullnode)
                         {
                             b.left.color = black;
                             b.color = red;
                             root = rotate(b, rr);
                             b = f.right;
                         }
-                        else if (f.right == p)
+                        if ((b.left != nullnode && b.right != nullnode) || (b.right != nullnode))
+                        {
+                            b.color = f.color;
+                            f.color = b.right.color = black;
+                            root = rotate(f, ll);
+                        }
+                    }
+                    else if (f.right == p)
+                    {
+                        if(b.right != nullnode && b.left == nullnode)
                         {
                             b.right.color = black;
                             b.color = red;
                             root = rotate(b, ll);
                             b = f.left;
                         }
-                    }
-                    if ((b.left != nullnode && b.right != nullnode) || (b.right != nullnode))
-                    {
-                        if (f.left == p)
-                        {
-                            b.color = f.color;
-                            f.color = b.right.color = black;
-                            root = rotate(f, ll);
-                        }
-                        else if (f.right == p)
+                        if((b.left != nullnode && b.right != nullnode) || (b.left != nullnode))
                         {
                             b.color = f.color;
                             f.color = b.left.color = black;
@@ -442,7 +456,8 @@
                             b.color = red;
 
                             let t = f;
-                            while(t != root){
+                            while(t != root)
+                            {
                                 f = t.parent;
                                 if (f.left == t)
                                 {
@@ -453,36 +468,47 @@
                                     b = f.left;
                                 }
                                 
-                                if (b.left.color == black && b.right.color == black){
-                                    if (f.color == red){
+                                if (b.left.color == black && b.right.color == black)
+                                {
+                                    if (f.color == red)
+                                    {
                                         b.color = red;
                                         f.color = black;
                                         break
                                     }
-                                    if (f.color == black){
+                                    if (f.color == black)
+                                    {
                                         b.color = red;
                                         t = f;
                                         continue;
                                     }
                                 }
-                                if (f.left == t){
-                                    if (b.right.color == red){
+                                if (f.left == t)
+                                {
+                                    if (b.right.color == red)
+                                    {
                                         b.right.color = black;
                                         root = rotate(f, ll);
                                         break
-                                    }else if (b.right.color == black && b.left.color == red){
+                                    }
+                                    else if (b.right.color == black && b.left.color == red)
+                                    {
                                         b.color = b.left.color;
                                         b.left.color = black;
                                         root = rotate(b, rr);
                                         continue;
                                     }
                                 }
-                                if (f.right == t){
-                                    if (b.left.color == red){
+                                if (f.right == t)
+                                {
+                                    if (b.left.color == red)
+                                    {
                                         b.left.color = black;
                                         root = rotate(f, rr);
                                         break
-                                    }else if (b.left.color == black && b.right.color == red){
+                                    }
+                                    else if (b.left.color == black && b.right.color == red)
+                                    {
                                         b.color = b.right.color;
                                         b.right.color = black;
                                         root = rotate(b, ll);
@@ -576,6 +602,32 @@
 
         var layer = new Konva.Layer()
 
+        function create_group_base(cex, cey, rad, cecol, data) {
+            var group_base = new Konva.Group({
+                draggable: true
+            })
+            var circle = new Konva.Circle({
+                x: cex,
+                y: cey,
+                radius: rad,
+                fill: cecol,
+                stroke: 'black',
+                strokeWidth: 1
+            })
+            var text = new Konva.Text({
+                x: circle.x() - circle.radius(),
+                y: circle.y() - circle.radius(),
+                text: data,
+                fontSize: 24,
+                fill: '#ffffff',
+                padding: 12 - (String(data).length - 1) * 4,
+                align: 'center',
+            })
+            group_base.add(circle)
+            group_base.add(text)
+            return group_base
+        }
+
         function create_arrow(arx, ary, pox, poy){
             let arrow = new Konva.Arrow({
                 x: arx,
@@ -614,31 +666,8 @@
             if(root.color == black){
                 cecol = '#000000'
             }
-
-            var group_base = new Konva.Group({
-                draggable: true
-            })
-            var circle = new Konva.Circle({
-                x: cex,
-                y: cey,
-                radius: 20,
-                fill: cecol,
-                stroke: 'black',
-                strokeWidth: 1
-            })
-            var text = new Konva.Text({
-                x: circle.x() - circle.radius(),
-                y: circle.y() - circle.radius(),
-                text: root.data,
-                fontSize: 24,
-                fill: '#ffffff',
-                padding: 12 - (String(root.data).length - 1) * 4,
-                align: 'center',
-            })
-            group_base.add(circle)
-            group_base.add(text)
-            
-            root.group = group_base
+            var circle_rad = 20
+            root.group = create_group_base(cex, cey, circle_rad, cecol, root.data)
             layer.add(root.group)
                 
             pa_cex = root.parent.group.children[0].attrs.x
@@ -647,7 +676,7 @@
             if(root.parent.left == root){
                 // 得到父亲和当前相对的圆环上的两个坐标向量
                 let f_ring_vec = new vector(pa_cex-3, pa_cey+3, pa_rad, 135)
-                let p_ring_vec = new vector(cex+3, cey-3, circle.radius(), -45)
+                let p_ring_vec = new vector(cex+3, cey-3, circle_rad, -45)
                 // 当前向量矩阵相减父亲向量得到箭头终点的坐标向量
                 let [pox, poy] = new matrix_2by2().subtraction(p_ring_vec, f_ring_vec)
                 // 生成箭头图形赋值给当前的父亲节点
@@ -659,7 +688,7 @@
             }
             if(root.parent.right == root){
                 let f_ring_vec = new vector(pa_cex+3, pa_cey+3, pa_rad, 45)
-                let p_ring_vec = new vector(cex-3, cey-3, circle.radius(), -135)
+                let p_ring_vec = new vector(cex-3, cey-3, circle_rad, -135)
                 let [pox, poy] = new matrix_2by2().subtraction(p_ring_vec, f_ring_vec)
 
                 root.parent.right_arrow = create_arrow(f_ring_vec.x, f_ring_vec.y, pox, poy)
@@ -743,20 +772,13 @@
                 let p_angle = 0;
                 [p_cex, p_cey, p_angle] = (direction == 'left') ? [p_cex-3, p_cey+3, 135] : (direction == 'right') ? [p_cex+3, p_cey+3, 45] : [p_cex, p_cey, 0]
                 var p_ring_vec = new vector(p_cex, p_cey, p_radius, p_angle)
-                var arrow_local = new Konva.Arrow({
-                    x: p_ring_vec.x,
-                    y: p_ring_vec.y,
-                    points: [0, 0, 0, 0],
-                    pointerLength: 10,
-                    pointerWidth: 10,
-                    fill: 'black',
-                    stroke: 'black',
-                    strokeWidth: 2
-                })
+                var arrow_local = create_arrow(p_ring_vec.x, p_ring_vec.y, 0, 0)
+                arrow_local.opacity(0)
                 layer_local.add(arrow_local)
                 return arrow_local
             }
 
+            // 在临时图层上寻找对应的图形
             var Arrow_list = layer_local.find('Arrow')
             for (let key in Arrow_list) {
                 if(Arrow_list[key] == Arrow_list.length){
@@ -773,18 +795,19 @@
             if(next_node == null){
                 var [pox, poy] = [0, 0]
             }else{
-                var n_pox = next_node.group.children[0].attrs.x
-                var n_poy = next_node.group.children[0].attrs.y
+                var n_arx = next_node.group.children[0].attrs.x
+                var n_ary = next_node.group.children[0].attrs.y
                 var n_radius = next_node.group.children[0].attrs.radius
                 // 目标节点的坐标矩阵相减箭头原点得到相对位置的差值矩阵
-                var [cx, cy] = new matrix_2by2().subtraction(new vector(n_pox, n_poy), new vector(arrow_local.attrs.x, arrow_local.attrs.y));
+                var [cx, cy] = new matrix_2by2().subtraction(new vector(n_arx, n_ary), new vector(arrow_local.attrs.x, arrow_local.attrs.y));
                 // 判断以目标节点为中心相对箭头原点的方向
                 // 右下角 45   // cx < 0 && cy < 0
                 // 左下角 135  // cx < 0 && cy > 0
                 // 左上角 -135 // cx > 0 && cy > 0
                 // 右上角 -45  // cx > 0 && cy < 0
                 var n_angle = (cx < 0 && cy < 0) ? 45 : (cx < 0 && cy > 0) ? 135 : (cx > 0 && cy > 0) ? -135 : (cx > 0 && cy < 0) ? -45 : 0;
-                var [pox, poy] = new matrix_2by2().subtraction(new vector(n_pox, n_poy, n_radius, n_radius), new vector(arrow_local.attrs.x, arrow_local.attrs.y))
+                [n_arx, n_ary] = (cx < 0 && cy < 0) ? [n_arx+3, n_ary+3] : (cx < 0 && cy > 0) ? [n_arx-3, n_ary+3] : (cx > 0 && cy > 0) ? [n_arx-3, n_ary-3] : (cx > 0 && cy < 0) ? [n_arx+3, n_ary-3] : [n_arx, n_ary];
+                var [pox, poy] = new matrix_2by2().subtraction(new vector(n_arx, n_ary, n_radius, n_angle), new vector(arrow_local.attrs.x, arrow_local.attrs.y))
             }
             return [pox, poy]
         }
@@ -792,19 +815,113 @@
         function arrow_cartoon(p_node, direction, n_node, timeline, layer_local) {
             var arrow_local = get_p_arrow(p_node, direction, layer_local)
             var [pox, poy] = get_tween_para(arrow_local, n_node)
+            var opa = (pox == 0 && poy == 0) ? 0 : 1;
             timeline.to(arrow_local, 1, {
                 konva: {
                     points: [0, 0, pox, poy],
+                    opacity: opa,
+                }
+            })
+        }
+        
+        function rotate_cartoon(kg, direction, tl, layer_local) {
+            let kf, kgf;
+            if (direction == ll)
+            {
+                kf = kg.right;
+                // kg.right = kf.left;
+                arrow_cartoon(kg, 'right', kf.left, tl, layer_local)
+                // kf.left = kg
+                arrow_cartoon(kf, 'left', kg, tl, layer_local)
+                
+            }
+            if (direction == rr)
+            {
+                kf = kg.left;
+                // kg.left = kf.right;
+                arrow_cartoon(kg, 'left', kf.right, tl, layer_local)
+
+                // kf.right = kg;
+                arrow_cartoon(kf, 'right', kg, tl, layer_local)
+            }
+            if (kg.parent != kg)
+            {
+                kgf = kg.parent;
+                if (kgf.left == kg)
+                {
+                    // kgf.left = kf;
+                    arrow_cartoon(kgf, 'left', kf, tl, layer_local)
+                }
+                if (kgf.right == kg)
+                {
+                    // kgf.right = kf;
+                    arrow_cartoon(kgf, 'right', kf, tl, layer_local)
+                }
+            }
+        }
+
+        function node_move_cartoon(group_node, p_node, direction, timeline, layer_local) {
+            let grx = group_node.children[0].attrs.x
+            let gry = group_node.children[0].attrs.y
+            let rad = group_node.children[0].attrs.radius
+            let prx = p_node.group.children[0].attrs.x
+            let pry = p_node.group.children[0].attrs.y
+
+            // 根据方向添加偏置以移动到叶子节点相对的插入坐标
+            let [prx_b, pry_b] = (direction == 'left') ? [prx-60, pry+60] : (direction == 'right') ? [prx+60, pry+60] : [prx, pry]
+            let [cex, cey] = new matrix_2by2().subtraction(new vector(prx_b, pry_b), new vector(grx, gry))
+            timeline.to(group_node, 1, {
+                konva: {
+                    x: cex,
+                    y: cey,
+                }
+            })
+            // 生成箭头指向插入节点
+            let [angle, angle_b] = (direction == 'left') ? [135, -45] : (direction == 'right') ? [45, -135] : [0, 0];
+            [prx, pry, prx_b, pry_b] = (direction == 'left') ? [prx-3, pry+3, prx_b+3, pry_b-3] : (direction == 'right') ? [prx+3, pry+3, prx_b-3, pry_b-3] : [prx, pry, prx_b, pry_b];
+            var p_ring_vec = new vector(prx, pry, rad, angle)
+            let [pox, poy] = new matrix_2by2().subtraction(new vector(prx_b, pry_b, rad, angle_b), p_ring_vec)
+            var arrow_local = create_arrow(p_ring_vec.x, p_ring_vec.y, 0, 0)
+            arrow_local.opacity(0)
+            layer_local.add(arrow_local)
+            timeline.to(arrow_local, 1, {
+                konva: {
+                    points: [0, 0, pox, poy],
+                    opacity: 1,
                 }
             })
         }
 
-        function rotate_cartoon(kg, direction) {
-            
+        function group_base_opacity_cartoon(group_node, timeline) {
+            group_node.opacity(0)
+            timeline.to(group_node, 1, {
+                konva: {
+                    opacity: 1,
+                }
+            })
+        }
+
+        function change_color_cartoon(node, color = red, timeline, layer_local) {
+            var Group_node = layer_local_find_group(node, layer_local)
+            var hex = (color == black) ? '#000000' : '#ff3535';
+            timeline.to(Group_node.children[0], 1, {
+                konva: {
+                    fill: hex,
+                }
+            })
+        }
+
+        function insert_cartoon(x, root){
+            var h, f, g, u, p
+
+            layer.destroyChildren()
+            draw(t,0,0)
+            layer.batchDraw()
+            stage.batchDraw()
+
             var layer_local = layer.clone();
-            handle.drag_switch(layer)
             handle.drag_switch(layer_local)
-            stage.add(layer_local);
+
             var tl = new TimelineLite({
                 onStart: () => {
                     layer.hide();
@@ -816,63 +933,435 @@
                 },
             });
 
-            let kf, kgf;
-            if (direction == ll)
-            {
-                kf = kg.right;
-                //kg.right = kf.left;
-                arrow_cartoon(kg, 'right', kf.left, tl, layer_local)
+            var group_base_local = create_group_base(width/2, 50, 20, '#ff3535', x)
+            layer_local.add(group_base_local)
+            stage.add(layer_local);
 
-                //  kf.left = kg
-                arrow_cartoon(kf, 'left', kg, tl, layer_local)
-                /* if(kf.left != nullnode)
-                {
-                    kf.left.parent = kg;
-                }
-                kf.left = kg; */
-                
-            }
-            /* if (direction == rr)
+            group_base_opacity_cartoon(group_base_local, tl)
+
+            if (root.parent == nullnode)
             {
-                kf = kg.left;
-                kg.left = kf.right;
-                if(kf.right != nullnode)
+                return;
+            }
+            // 程序结构需要临时插入节点
+            var h = new rbnode(x,red,nullnode,nullnode,nullnode)
+            var del_h = h
+            h.group = group_base_local
+            
+            p = root;
+            while (1)
+            {
+                if (x < p.data)
                 {
-                    kf.right.parent = kg;
+                    if (p.left == nullnode)
+                    {
+                        node_move_cartoon(group_base_local, p, 'left', tl, layer_local)
+                        p.left = h;
+                        h.parent = p;
+                        break;
+                    }
+                    else
+                    {
+                        p = p.left;
+                    }
                 }
-                kf.right = kg;
+                if (x > p.data)
+                {
+                    if (p.right == nullnode)
+                    {
+                        node_move_cartoon(group_base_local, p, 'right', tl, layer_local)
+                        p.right = h;
+                        h.parent = p;
+                        break;
+                    }
+                    else
+                    {
+                        p = p.right;
+                    }
+                }
+                if (x == p.data)
+                {
+                    return;
+                }
             }
 
-            if (kg.parent == kg)
+            while (1)
             {
-                kf.parent = kf;
-                kg.parent = kf;
+                f = h.parent;
+                if (f == h)
+                {
+                    // h.color = black;
+                    change_color_cartoon(h, black, tl, layer_local)
+                }
+                if (f.color == black)
+                {
+                    break;
+                }
+                if (f.color == red)
+                {
+                    g = h.parent.parent;
+                    if (g.left == f)
+                    {
+                        u = g.right;
+                    }
+                    if (g.right == f)
+                    {
+                        u = g.left;
+                    }
+
+                    if (u == nullnode || u.color == black)
+                    {
+                        if (g.right == f && f.right == h)
+                        {
+                            // root = rotate(g, ll);
+                            // f.color = black;
+                            // g.color = red;
+                            rotate_cartoon(g, ll, tl, layer_local)
+                            change_color_cartoon(f, black, tl, layer_local)
+                            change_color_cartoon(g, red, tl, layer_local)
+                            break;
+                        }
+                        if (g.left == f && f.left == h)
+                        {
+                            // root = rotate(g, rr);
+                            // f.color = black;
+                            // g.color = red;
+                            rotate_cartoon(g, rr, tl, layer_local)
+                            change_color_cartoon(f, black, tl, layer_local)
+                            change_color_cartoon(g, red, tl, layer_local)
+                            break;
+                        }
+                        if (g.right == f && f.left == h)
+                        {
+                            // root = rotate(f, rr);
+                            // root = rotate(g, ll);
+                            // h.color = black;
+                            // g.color = red;
+                            rotate_cartoon(f, rr, tl, layer_local)
+                            change_color_cartoon(h, black, tl, layer_local)
+                            change_color_cartoon(g, red, tl, layer_local)
+                            break;
+                        }
+                        if (g.left == f && f.right == h)
+                        {
+                            // root = rotate(f, ll);
+                            // root = rotate(g, rr);
+                            // h.color = black;
+                            // g.color = red;
+                            rotate_cartoon(f, ll, tl, layer_local)
+                            change_color_cartoon(h, black, tl,layer_local)
+                            change_color_cartoon(g, red, tl, layer_local)
+                            break;
+                        }
+                    }
+
+                    if (u.color == red)
+                    {
+                        // f.color = u.color = black;
+                        // g.color = red;
+                        change_color_cartoon(f, black, tl, layer_local)
+                        change_color_cartoon(u, black, tl, layer_local)
+                        change_color_cartoon(g, red, tl, layer_local)
+                        h = g;
+                    }
+                }
             }
-            else
+
+            if (del_h.parent.left == del_h)
             {
-                kgf = kg.parent;
-                if (kgf.left == kg)
-                {
-                    kgf.left = kf;
-                }
-                if (kgf.right == kg)
-                {
-                    kgf.right = kf;
-                }
-                kf.parent = kgf;
-                kg.parent = kf;
-
-                while (kf.parent != kf)
-                {
-                    kf = kf.parent;
-                }
+                del_h.parent.left = nullnode;
             }
-
-            return kf; */
+            if (del_h.parent.right == del_h)
+            {
+                del_h.parent.right = nullnode;
+            }
         }
 
-        // 2021 4 23 本人应该在车底，不应该在车里
-        // Local complete time : Apr 22 2021
+        function layer_local_find_group(node, layer_local) {
+            var Group_list = layer_local.find('Group')
+            for (let key in Group_list) {
+                if(Group_list[key] == Group_list.length){
+                    break
+                }
+                if(node.data == Number(Group_list[key].children[1].attrs.text)){
+                    var Group_node = Group_list[key]
+                }
+            }
+            return Group_node
+        }
+
+        function del_opacity_cartoon(p_node, timeline, layer_local) {
+            var p_group = layer_local_find_group(p_node, layer_local)
+            timeline.to(p_group.children[0], 1, {
+                konva: {
+                    opacity: 0,
+                }
+            })
+        }
+
+        function assign_data_cartoon(p_node, n_node, timeline, layer_local) {
+            var p_group = layer_local_find_group(p_node, layer_local)
+            var n_group = layer_local_find_group(n_node, layer_local)
+            p_group.children[1].text(n_group.children[1].text())
+        }
+
+        function get_node_color(p_node, layer_local) {
+            var p_group = layer_local_find_group(p_node, layer_local)
+            if (p_group.children[0].attrs.fill == '#ff3535') {
+                return red
+            }
+            if (p_group.children[0].attrs.fill == '#000000') {
+                return black
+            }
+        }
+
+        function del_cartoon(x, root)
+        {
+            var p, r, f, b, c;
+
+            layer.destroyChildren()
+            draw(t,0,0)
+            layer.batchDraw()
+            stage.batchDraw()
+
+            var layer_local = layer.clone();
+            handle.drag_switch(layer_local)
+            stage.add(layer_local);
+
+            var tl = new TimelineLite({
+                onStart: () => {
+                    layer.hide();
+                },
+                onComplete: () => {
+                    layer_local.destroy();
+                    layer.show();
+                    layer.batchDraw();
+                },
+            });
+
+            p = findnode(x, root);
+            if (root.left == nullnode && root.right == nullnode && p == root){
+                //del_opacity_cartoon(p, tl, layer_local)
+                return;
+            }
+            if (p == nullnode || root.parent == nullnode)
+            {
+                return;
+            }
+            while (1)
+            {
+                if (p.left == nullnode && p.right == nullnode)
+                {
+                    break;
+                }
+                r = prenode(p);
+                if (p == r)
+                {
+                    r = nextnode(p)
+                }
+                //p.data = r.data;
+                assign_data_cartoon(p, r, tl, layer_local)
+                p = r;
+            }
+
+            // p.color == black
+            if (get_node_color(p, layer_local) == black)
+            {
+                f = p.parent;
+                if (f.left == p)
+                {
+                    b = f.right;
+                }
+                else if (f.right == p)
+                {
+                    b = f.left;
+                }
+                // b.color == red
+                if (get_node_color(b, layer_local) == red)
+                {
+                    if (f.left == p)
+                    {
+                        // b.color = black;
+                        // b.left.color = red;
+                        // root = rotate(f, ll);
+                        change_color_cartoon(b, black, tl, layer_local)
+                        change_color_cartoon(b.left, red, tl, layer_local)
+                        rotate_cartoon(f, ll, tl, layer_local)
+                    }
+                    else if (f.right == p)
+                    {
+                        // b.color = black;
+                        // b.right.color = red;
+                        // root = rotate(f, rr);
+                        change_color_cartoon(b, black, tl, layer_local)
+                        change_color_cartoon(b.right, red, tl, layer_local)
+                        rotate_cartoon(f, rr, tl, layer_local)
+                    }
+                }
+                // b.color == black
+                if (get_node_color(b, layer_local) == black)
+                {
+                    if (f.left == p)
+                    {
+                        if (b.left != nullnode && b.right == nullnode)
+                        {
+                            // b.left.color = black;
+                            // b.color = red;
+                            // root = rotate(b, rr);
+                            change_color_cartoon(b.left, black, tl, layer_local)
+                            change_color_cartoon(b, red, tl, layer_local)
+                            rotate_cartoon(b, rr, tl, layer_local)
+                            // b = f.right;
+                            // b = b.left
+                        }
+                        if ((b.left != nullnode && b.right != nullnode) || (b.right != nullnode))
+                        {
+                            // b.color = f.color;
+                            // f.color = b.right.color = black;
+                            // root = rotate(f, ll);
+                            change_color_cartoon(b, f.color, tl, layer_local)
+                            change_color_cartoon(f, black, tl, layer_local)
+                            change_color_cartoon(b.right, black, tl, layer_local)
+                            rotate_cartoon(f, ll, tl, layer_local)
+                        }
+                    }
+                    else if (f.right == p)
+                    {
+                        if(b.right != nullnode && b.left == nullnode)
+                        {
+                            // b.right.color = black;
+                            // b.color = red;
+                            // root = rotate(b, ll);
+                            change_color_cartoon(b.right, black, tl, layer_local)
+                            change_color_cartoon(b, red, tl, layer_local)
+                            rotate_cartoon(b, ll, tl, layer_local)
+                            b = f.left;
+                        }
+                        if((b.left != nullnode && b.right != nullnode) || (b.left != nullnode))
+                        {
+                            // b.color = f.color;
+                            // f.color = b.left.color = black;
+                            // root = rotate(f, rr);
+                            change_color_cartoon(b, f.color, tl, layer_local)
+                            change_color_cartoon(f, black, tl, layer_local)
+                            change_color_cartoon(b.left, black, tl, layer_local)
+                            rotate_cartoon(f, rr, tl, layer_local)
+                        }
+                    }
+                    if (b.left == nullnode && b.right == nullnode)
+                    {
+                        // f.color == red
+                        if (get_node_color(f, layer_local) == red)
+                        {
+                            // f.color = black;
+                            // b.color = red;
+                            change_color_cartoon(f, black, tl, layer_local)
+                            change_color_cartoon(b, red, tl, layer_local)
+                        }
+                        // f.color == black
+                        else if (get_node_color(f, layer_local) == black)
+                        {
+                            // b.color = red;
+                            change_color_cartoon(b, red, tl, layer_local)
+
+                            let t = f;
+                            while(t != root)
+                            {
+                                f = t.parent;
+                                if (f.left == t)
+                                {
+                                    b = f.right;
+                                }
+                                if (f.right == t)
+                                {
+                                    b = f.left;
+                                }
+                                
+                                // b.left.color == black && b.right.color == black
+                                if (get_node_color(b.left, layer_local) == black && get_node_color(b.right, layer_local) == black)
+                                {
+                                    // f.color == red
+                                    if (get_node_color(f, layer_local) == red)
+                                    {
+                                        // b.color = red;
+                                        // f.color = black;
+                                        change_color_cartoon(b, red, tl, layer_local)
+                                        change_color_cartoon(f, black, tl, layer_local)
+                                        break
+                                    }
+                                    // f.color == black
+                                    if (get_node_color(f, layer_local) == black)
+                                    {
+                                        // b.color = red;
+                                        change_color_cartoon(b, red, tl, layer_local)
+                                        t = f;
+                                        continue;
+                                    }
+                                }
+                                if (f.left == t)
+                                {
+                                    // b.right.color == red
+                                    if (get_node_color(b.right, layer_local) == red)
+                                    {
+                                        // b.right.color = black;
+                                        // root = rotate(f, ll);
+                                        change_color_cartoon(b.right, black, tl, layer_local)
+                                        rotate_cartoon(f, ll, tl, layer_local)
+                                        break
+                                    }
+                                    // b.right.color == black && b.left.color == red
+                                    else if (get_node_color(b.right, layer_local) == black && get_node_color(b.left, layer_local) == red)
+                                    {
+                                        // b.color = b.left.color;
+                                        // b.left.color = black;
+                                        // root = rotate(b, rr);
+                                        change_color_cartoon(b, b.left, tl, layer_local)
+                                        change_color_cartoon(b.left, black, tl, layer_local)
+                                        rotate_cartoon(b, rr, tl, layer_local)
+                                        continue;
+                                    }
+                                }
+                                if (f.right == t)
+                                {
+                                    // b.left.color == red
+                                    if (get_node_color(b.left, layer_local) == red)
+                                    {
+                                        // b.left.color = black;
+                                        // root = rotate(f, rr);
+                                        change_color_cartoon(b.left, black, tl, layer_local)
+                                        rotate_cartoon(f, rr, tl, layer_local)
+                                        break
+                                    }
+                                    // b.left.color == black && b.right.color == red
+                                    else if (get_node_color(b.left, layer_local) == black && get_node_color(b.right, layer_local) == red)
+                                    {
+                                        // b.color = b.right.color;
+                                        // b.right.color = black;
+                                        // root = rotate(b, ll);
+                                        change_color_cartoon(b, b.right, tl, layer_local)
+                                        change_color_cartoon(b.right, black, tl, layer_local)
+                                        rotate_cartoon(b, ll, tl, layer_local)
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            /* if (p.parent.left == p)
+            {
+                p.parent.left = nullnode;
+            }
+            if (p.parent.right == p)
+            {
+                p.parent.right = nullnode;
+            }
+
+            return root; */
+            del_opacity_cartoon(p, tl, layer_local)
+        }
+        // Local complete time : Apr 25 2021
         // Author: akinokoika
     </script>
 </script>
