@@ -3,7 +3,7 @@
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Page Title</title>
+    <title>Red black tree visualization</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='./paper/paper.min.css'>
     <script src='./konva/konva.min.js'></script>
@@ -90,7 +90,7 @@
             },
         }).mount('#handle')
 
-        const black = 'black', red = 'red', nullnode = null, ll = 'll', rr = 'rr'
+        const black = 'black', red = 'red', nullnode = null, ll = 'll', rr = 'rr', black_color = '#000000', red_color = '#ff3535';
 
         class vector{
             constructor(x = 0, y = 0, radius = null, angle = null){
@@ -104,6 +104,9 @@
                     this.y = Math.round(poy)
                 }
             }
+            value(){
+                return [this.x, this.y]
+            }
         }
         class matrix_2by2{
             constructor(i_x = 1, i_y = 0, j_x = 0, j_y = 1){
@@ -115,8 +118,17 @@
             addition(vec1, vec2){
                 return [vec1.x + vec2.x, vec1.y + vec2.y]
             }
-            subtraction(vec1 ,vec2){
+            subtraction(vec1, vec2){
                 return [vec1.x - vec2.x, vec1.y - vec2.y]
+            }
+            multiplication(sca, vec){
+                return [sca * vec.x, sca * vec.y]
+            }
+            linear_transformation(vec){
+                let [a, c] = new matrix_2by2().multiplication(vec.x, new vector(this.i_x, this.i_y))
+                let [b, d] = new matrix_2by2().multiplication(vec.y, new vector(this.j_x, this.j_y))
+                let [ab, cd] = new matrix_2by2().addition(new vector(a, c), new vector(b, d))
+                return [ab, cd]
             }
         }
 
@@ -137,7 +149,7 @@
         }
 
         function init(){
-            var root = new rbnode(-1,black,nullnode,nullnode,nullnode)
+            var root = new rbnode(-1, black, nullnode, nullnode, nullnode)
             return root
         }
 
@@ -620,9 +632,11 @@
         }
 
         var t = init()
+        
+        // console.log(globalThis.t)
 
-        var width = window.innerWidth
-        var height = window.innerHeight
+        const width = window.innerWidth
+        const height = window.innerHeight
 
         var stage = new Konva.Stage({
             container: 'box',
@@ -691,10 +705,10 @@
                 cey = cey + 60
             }
             if(root.color == red){
-                cecol = '#ff3535'
+                cecol = red_color
             }
             if(root.color == black){
-                cecol = '#000000'
+                cecol = black_color
             }
             var circle_rad = 20
             root.group = create_group_base(cex, cey, circle_rad, cecol, root.data, true)
@@ -933,7 +947,7 @@
 
         function change_color_cartoon(node, color = red, timeline, layer_local) {
             var Group_node = layer_local_find_group(node, layer_local)
-            var hex = (color == black) ? '#000000' : '#ff3535';
+            var hex = (color == black) ? red_color : black_color;
             timeline.to(Group_node.children[0], 1, {
                 konva: {
                     fill: hex,
@@ -972,7 +986,7 @@
 
             var [layer_local, tl] = cartoon_init()
 
-            var group_base_local = create_group_base(width/2, 50, 20, '#ff3535', x, false)
+            var group_base_local = create_group_base(width/2, 50, 20, red_color, x, false)
             layer_local.add(group_base_local)
 
             stage.add(layer_local);
@@ -1117,6 +1131,7 @@
             }
         }
 
+        // 在临时图层上找到节点的对应图形
         function layer_local_find_group(node, layer_local) {
             var Group_list = layer_local.find('Group')
             var Group_node = nullnode
@@ -1153,10 +1168,10 @@
 
         function get_node_color(p_node, layer_local) {
             var p_group = layer_local_find_group(p_node, layer_local)
-            if (p_group.children[0].attrs.fill == '#ff3535') {
+            if (p_group.children[0].attrs.fill == red_color) {
                 return red
             }
-            if (p_group.children[0].attrs.fill == '#000000') {
+            if (p_group.children[0].attrs.fill == black_color) {
                 return black
             }
         }
@@ -1404,10 +1419,6 @@
 
             del_opacity_cartoon(p, tl, layer_local)
         }
-        // Local complete time : Apr 26 2021
-        // Local commit : almost complete
-        // Author: akinokoika
     </script>
-</script>
 </body>
 </html>
