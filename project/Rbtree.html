@@ -7,6 +7,9 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='./paper/paper.min.css'>
     <script src='./konva/konva.min.js'></script>
+    <script src='./konva/KonvaPlugin.js'></script>
+    <script src='./konva/TweenLite.min.js'></script>
+    <script src='./konva/TimelineLite.min.js'></script>
     <script src='./vue/vue.global.js'></script>
 </head>
 <body>
@@ -126,6 +129,7 @@
         }
 
         function rotate(kg, direction) {
+            rotate_cartoon(kg, direction)
             var kf, kgf
             if (direction == ll)
             {
@@ -724,11 +728,33 @@
         
         stage.add(layer)
 
-        function cartoon(p_node_arrow, next_node) {
-            var layer_local = layer.clone()
-
+        function get_p_arrow(p_node, direction, layer_local) {
+            if(direction == 'left'){
+                var p_node_arrow = p_node.left_arrow
+            }
+            if(direction == 'right'){
+                var p_node_arrow = p_node.right_arrow
+            }
+            
             if(p_node_arrow == null){
-                return
+                let p_cex = p_node.group.children[0].attrs.x
+                let p_cey = p_node.group.children[0].attrs.y
+                let p_radius = p_node.group.children[0].attrs.radius
+                let p_angle = 0;
+                [p_cex, p_cey, p_angle] = (direction == 'left') ? [p_cex-3, p_cey+3, 135] : (direction == 'right') ? [p_cex+3, p_cey+3, 45] : [p_cex, p_cey, 0]
+                var p_ring_vec = new vector(p_cex, p_cey, p_radius, p_angle)
+                var arrow_local = new Konva.Arrow({
+                    x: p_ring_vec.x,
+                    y: p_ring_vec.y,
+                    points: [0, 0, 0, 0],
+                    pointerLength: 10,
+                    pointerWidth: 10,
+                    fill: 'black',
+                    stroke: 'black',
+                    strokeWidth: 2
+                })
+                layer_local.add(arrow_local)
+                return arrow_local
             }
 
             var Arrow_list = layer_local.find('Arrow')
@@ -740,39 +766,112 @@
                     var arrow_local = Arrow_list[key]
                 }
             }
+            return arrow_local
+        }
 
-            layer.hide()
-            stage.add(layer_local)
-            
+        function get_tween_para(arrow_local, next_node) {
             if(next_node == null){
                 var [pox, poy] = [0, 0]
             }else{
-                var next_pox = next_node.group.children[0].attrs.x
-                var next_poy = next_node.group.children[0].attrs.y
-                var next_radius= next_node.group.children[0].attrs.radius
-                var [cx, cy] = new matrix_2by2().subtraction(new vector(next_pox, next_poy), new vector(arrow_local.attrs.x, arrow_local.attrs.y))
-                // 右下角 45 // cx < 0 && cy < 0
-                // 左下角 135 // cx < 0 && cy > 0
+                var n_pox = next_node.group.children[0].attrs.x
+                var n_poy = next_node.group.children[0].attrs.y
+                var n_radius = next_node.group.children[0].attrs.radius
+                // 目标节点的坐标矩阵相减箭头原点得到相对位置的差值矩阵
+                var [cx, cy] = new matrix_2by2().subtraction(new vector(n_pox, n_poy), new vector(arrow_local.attrs.x, arrow_local.attrs.y));
+                // 判断以目标节点为中心相对箭头原点的方向
+                // 右下角 45   // cx < 0 && cy < 0
+                // 左下角 135  // cx < 0 && cy > 0
                 // 左上角 -135 // cx > 0 && cy > 0
-                // 右上角 -45 // cx > 0 && cy < 0
-                var next_angle = (cx < 0 && cy < 0) ? 45 : (cx < 0 && cy > 0) ? 135 : (cx > 0 && cy > 0) ? -135 : (cx > 0 && cy < 0) ? -45 : 0
-                var [pox, poy] = new matrix_2by2().subtraction(new vector(next_pox, next_poy, next_radius, next_angle), new vector(arrow_local.attrs.x, arrow_local.attrs.y))
+                // 右上角 -45  // cx > 0 && cy < 0
+                var n_angle = (cx < 0 && cy < 0) ? 45 : (cx < 0 && cy > 0) ? 135 : (cx > 0 && cy > 0) ? -135 : (cx > 0 && cy < 0) ? -45 : 0;
+                var [pox, poy] = new matrix_2by2().subtraction(new vector(n_pox, n_poy, n_radius, n_radius), new vector(arrow_local.attrs.x, arrow_local.attrs.y))
             }
-            
-            var tween = new Konva.Tween({
-                node: arrow_local,
-                points: [0, 0, pox, poy],
-                //rotation: Math.PI * 360,
-                duration: 1,
-                onFinish: function() {
-                    layer.show()
-                    layer.batchDraw();
-                    layer_local.destroy()
-                }
-            });
-            tween.play();
+            return [pox, poy]
         }
-        // Local complete time : Apr 20 2021
+
+        function arrow_cartoon(p_node, direction, n_node, timeline, layer_local) {
+            var arrow_local = get_p_arrow(p_node, direction, layer_local)
+            var [pox, poy] = get_tween_para(arrow_local, n_node)
+            timeline.to(arrow_local, 1, {
+                konva: {
+                    points: [0, 0, pox, poy],
+                }
+            })
+        }
+
+        function rotate_cartoon(kg, direction) {
+            
+            var layer_local = layer.clone();
+            handle.drag_switch(layer)
+            handle.drag_switch(layer_local)
+            stage.add(layer_local);
+            var tl = new TimelineLite({
+                onStart: () => {
+                    layer.hide();
+                },
+                onComplete: () => {
+                    layer_local.destroy();
+                    layer.show();
+                    layer.batchDraw();
+                },
+            });
+
+            let kf, kgf;
+            if (direction == ll)
+            {
+                kf = kg.right;
+                //kg.right = kf.left;
+                arrow_cartoon(kg, 'right', kf.left, tl, layer_local)
+
+                //  kf.left = kg
+                arrow_cartoon(kf, 'left', kg, tl, layer_local)
+                /* if(kf.left != nullnode)
+                {
+                    kf.left.parent = kg;
+                }
+                kf.left = kg; */
+                
+            }
+            /* if (direction == rr)
+            {
+                kf = kg.left;
+                kg.left = kf.right;
+                if(kf.right != nullnode)
+                {
+                    kf.right.parent = kg;
+                }
+                kf.right = kg;
+            }
+
+            if (kg.parent == kg)
+            {
+                kf.parent = kf;
+                kg.parent = kf;
+            }
+            else
+            {
+                kgf = kg.parent;
+                if (kgf.left == kg)
+                {
+                    kgf.left = kf;
+                }
+                if (kgf.right == kg)
+                {
+                    kgf.right = kf;
+                }
+                kf.parent = kgf;
+                kg.parent = kf;
+
+                while (kf.parent != kf)
+                {
+                    kf = kf.parent;
+                }
+            }
+
+            return kf; */
+        }
+
+        // Local complete time : Apr 22 2021
         // Author: akinokoika
     </script>
 </script>
