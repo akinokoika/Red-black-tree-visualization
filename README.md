@@ -13,7 +13,7 @@ Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss
 <p><img src="https://github.com/akinokoika/Red-black-tree-visualization/blob/main/image/Save_as.png" width="500px"></img></p>
 
 #### 代码
-```js
+```javascript
 var t = init()
 var x = Number(handle.info)
 t = insert(x, t)
