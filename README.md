@@ -9,8 +9,9 @@ Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss
 - 其他：红黑树性质4和5的判断，坐标向量的矩阵运算
 
 #### 图片
-<p><img src="" width="500px"></img></p>
+<p><img src="https://github.com/akinokoika/Red-black-tree-visualization/blob/main/image/Save_as.png" width="500px"></img></p>
 
+#### 代码
 ```js
 var t = init()
 var x = Number(handle.info)
