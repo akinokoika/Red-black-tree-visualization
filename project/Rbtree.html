@@ -716,7 +716,55 @@
         drag(t)
         
         stage.add(layer)
-        
+
+        function cartoon(p_node_arrow, next_node) {
+            var layer_local = layer.clone()
+
+            if(p_node_arrow == null){
+                return
+            }
+
+            var Arrow_list = layer_local.find('Arrow')
+            for (let key in Arrow_list) {
+                if(Arrow_list[key] == Arrow_list.length){
+                    break
+                }
+                if(p_node_arrow.attrs.x == Arrow_list[key].attrs.x && p_node_arrow.attrs.y == Arrow_list[key].attrs.y){
+                    var arrow_local = Arrow_list[key]
+                }
+            }
+
+            layer.hide()
+            stage.add(layer_local)
+            
+            if(next_node == null){
+                var [pox, poy] = [0, 0]
+            }else{
+                var next_pox = next_node.group.children[0].attrs.x
+                var next_poy = next_node.group.children[0].attrs.y
+                var next_radius= next_node.group.children[0].attrs.radius
+                var [cx, cy] = new matrix_2by2().subtraction(new vector(next_pox, next_poy), new vector(arrow_local.attrs.x, arrow_local.attrs.y))
+                // 右下角 45 // cx < 0 && cy < 0
+                // 左下角 135 // cx < 0 && cy > 0
+                // 左上角 -135 // cx > 0 && cy > 0
+                // 右上角 -45 // cx > 0 && cy < 0
+                var next_angle = (cx < 0 && cy < 0) ? 45 : (cx < 0 && cy > 0) ? 135 : (cx > 0 && cy > 0) ? -135 : (cx > 0 && cy < 0) ? -45 : 0
+                var [pox, poy] = new matrix_2by2().subtraction(new vector(next_pox, next_poy, next_radius, next_angle), new vector(arrow_local.attrs.x, arrow_local.attrs.y))
+            }
+            
+            var tween = new Konva.Tween({
+                node: arrow_local,
+                points: [0, 0, pox, poy],
+                //rotation: Math.PI * 360,
+                duration: 1,
+                onFinish: function() {
+                    layer.show()
+                    layer.batchDraw();
+                    layer_local.destroy()
+                }
+            });
+            tween.play();
+        }
         // Local complete time : Apr 20 2021
         // Author: akinokoika
     </script>
