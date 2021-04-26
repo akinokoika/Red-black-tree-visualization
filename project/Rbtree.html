@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Rbtree</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='./paper/paper.min.css'>
+    <script src='./konva/konva.min.js'></script>
+    <script src='./vue/vue.global.js'></script>
+</head>
+<body>
+    <div id="handle" class="row flex-center">
+        <div id="show-box" class="sm-4 col">
+            <input v-model="info" type="number" min="1" max="999">
+            <label for="show">{{ info }}</label>
+        </div>
+        <div  class="sm-4 col">
+            <button @click="hinsert" class="border border-danger" :disabled="!info">insert</button>
+            <button @click="hdel" class="border border-danger" :disabled="!info">del</button>
+        </div>
+    </div>
+    <div id="box"></div>
+
+    <script>
+        const handle = Vue.createApp({
+            data() {
+                return {
+                    info: ''
+                }
+            },
+            methods: {
+                hinsert() {
+                    t = insert(Number(this.info), t)
+                    layer.destroyChildren()
+                    draw(t,0,0)
+                    stage.batchDraw()
+                    drag(t)
+
+                    console.log(t)
+                    console.log(judge_nature_4(t))
+                    console.log(judge_nature_5(t))
+                },
+                hdel() {
+                    t = del(Number(this.info), t)
+                    layer.destroyChildren()
+                    draw(t,0,0)
+                    stage.batchDraw()
+                    drag(t)
+
+                    console.log(t)
+                    console.log(judge_nature_4(t))
+                    console.log(judge_nature_5(t))
+                },
+            },
+        }).mount('#handle')
+
+        const black = 'black', red = 'red', nullnode = null, ll = 'll', rr = 'rr'
+
+        class rbnode{
+            constructor(d,c,l,r,p){
+                this.data = d
+                this.color = c
+                this.left = l
+                this.right = r
+                this.parent = p
+
+                this.group = null
+                this.left_arrow = null
+                this.right_arrow = null
+                this.left_points = null
+                this.right_points = null
+            }
+        }
+
+        function init(){
+            var root = new rbnode(-1,black,nullnode,nullnode,nullnode)
+            return root
+        }
+
+        function rotate(kg, direction) {
+            var kf, kgf
+            if (direction == ll)
+            {
+                kf = kg.right;
+                kg.right = kf.left;
+                if(kf.left != nullnode)
+                {
+                    kf.left.parent = kg;
+                }
+                kf.left = kg;
+            }
+            if (direction == rr)
+            {
+                kf = kg.left;
+                kg.left = kf.right;
+                if(kf.right != nullnode)
+                {
+                    kf.right.parent = kg;
+                }
+                kf.right = kg;
+            }
+
+            if (kg.parent == kg)
+            {
+                kf.parent = kf;
+                kg.parent = kf;
+            }
+            else
+            {
+                kgf = kg.parent;
+                if (kgf.left == kg)
+                {
+                    kgf.left = kf;
+                }
+                if (kgf.right == kg)
+                {
+                    kgf.right = kf;
+                }
+                kf.parent = kgf;
+                kg.parent = kf;
+
+                while (kf.parent != kf)
+                {
+                    kf = kf.parent;
+                }
+            }
+
+            return kf;
+        }
+
+        function insert(x, root){
+            var h, f, g, u, p
+            if (root.parent == nullnode)
+            {
+                root.data = x;
+                root.parent = root;
+                return root;
+            }
+            var h = new rbnode(x,red,nullnode,nullnode,nullnode)
+            p = root;
+            while (1)
+            {
+                if (x < p.data)
+                {
+                    if (p.left == nullnode)
+                    {
+                        p.left = h;
+                        h.parent = p;
+                        break;
+                    }
+                    else
+                    {
+                        p = p.left;
+                    }
+                }
+                if (x > p.data)
+                {
+                    if (p.right == nullnode)
+                    {
+                        p.right = h;
+                        h.parent = p;
+                        break;
+                    }
+                    else
+                    {
+                        p = p.right;
+                    }
+                }
+                if (x == p.data)
+                {
+                    return root;
+                }
+            }
+
+            while (1)
+            {
+                f = h.parent;
+                if (f == h)
+                {
+                    h.color = black;
+                }
+                if (f.color == black)
+                {
+                    break;
+                }
+                if (f.color == red)
+                {
+                    g = h.parent.parent;
+                    if (g.left == f)
+                    {
+                        u = g.right;
+                    }
+                    if (g.right == f)
+                    {
+                        u = g.left;
+                    }
+
+                    if (u == nullnode || u.color == black)
+                    {
+                        if (g.right == f && f.right == h)
+                        {
+                            root = rotate(g, ll);
+                            f.color = black;
+                            g.color = red;
+                            break;
+                        }
+                        if (g.left == f && f.left == h)
+                        {
+                            root = rotate(g, rr);
+                            f.color = black;
+                            g.color = red;
+                            break;
+                        }
+                        if (g.right == f && f.left == h)
+                        {
+                            root = rotate(f, rr);
+                            root = rotate(g, ll);
+                            h.color = black;
+                            g.color = red;
+                            break;
+                        }
+                        if (g.left == f && f.right == h)
+                        {
+                            root = rotate(f, ll);
+                            root = rotate(g, rr);
+                            h.color = black;
+                            g.color = red;
+                            break;
+                        }
+                    }
+
+                    if (u.color == red)
+                    {
+                        f.color = u.color = black;
+                        g.color = red;
+                        h = g;
+                    }
+                }
+            }
+            return root;
+        }
+
+        function findnode(x, fn)
+        {
+            while (1)
+            {
+                if (fn == nullnode)
+                {
+                    return fn;
+                }
+                if (x > fn.data)
+                {
+                    fn = fn.right;
+                }
+                if (x < fn.data)
+                {
+                    fn = fn.left;
+                }
+                if (fn != nullnode && x == fn.data)
+                {
+                    break;
+                }
+            }
+            return fn;
+        }
+
+        function nextnode(r)
+        {
+            if (r.right == nullnode)
+            {
+                while (r != r.parent.left)
+                {
+                    r = r.parent;
+                }
+                r = r.parent;
+            }
+            else
+            {
+                r = r.right;
+                while (r.left != nullnode)
+                {
+                    r = r.left;
+                }
+            }
+            return r;
+        }
+
+        function del(x, root)
+        {
+            var p, r, f, b, c;
+
+            p = findnode(x, root);
+            if (p == nullnode)
+            {
+                return root;
+            }
+            if (p.left != nullnode && p.right != nullnode)
+            {
+                r = nextnode(p);
+                p.data = r.data;
+                p = r;
+            }
+            else if (p.left != nullnode || p.right != nullnode)
+            {
+                if (p.left != nullnode)
+                {
+                    p.data = p.left.data;
+                    p = p.left;
+                }
+                else if (p.right != nullnode)
+                {
+                    p.data = p.right.data;
+                    p = p.right;
+                }
+            }
+            if (p.color == black)
+            {
+                f = p.parent;
+                if (f.left == p)
+                {
+                    b = f.right;
+                }
+                else if (f.right == p)
+                {
+                    b = f.left;
+                }
+                if (b.color == red)
+                {
+                    if (f.left == p)
+                    {
+                        b.color = black;
+                        b.left.color = red;
+                        root = rotate(f, ll);
+                    }
+                    else if (f.right == p)
+                    {
+                        b.color = black;
+                        b.right.color = red;
+                        root = rotate(f, rr);
+                    }
+                }
+                if (b.color == black)
+                {
+                    if (b.left != nullnode && b.right == nullnode)
+                    {
+                        if (f.left == p)
+                        {
+                            b.left.color = black;
+                            b.color = red;
+                            root = rotate(b, rr);
+                            b = f.right;
+                        }
+                        else if (f.right == p)
+                        {
+                            b.right.color = black;
+                            b.color = red;
+                            root = rotate(b, ll);
+                            b = f.left;
+                        }
+                    }
+                    if ((b.left != nullnode && b.right != nullnode) || (b.right != nullnode))
+                    {
+                        if (f.left == p)
+                        {
+                            b.color = f.color;
+                            f.color = b.right.color = black;
+                            root = rotate(f, ll);
+                        }
+                        else if (f.right == p)
+                        {
+                            b.color = f.color;
+                            f.color = b.left.color = black;
+                            root = rotate(f, rr);
+                        }
+                    }
+                    if (b.left == nullnode && b.right == nullnode)
+                    {
+                        if (f.color == red)
+                        {
+                            f.color = black;
+                            b.color = red;
+                        }
+                        else if (f.color == black)
+                        {
+                            b.color = red;
+
+                            let t = f;
+                            while(t != root){
+                                f = t.parent;
+                                if (f.left == t)
+                                {
+                                    b = f.right;
+                                }
+                                if (f.right == t)
+                                {
+                                    b = f.left;
+                                }
+
+                                if(b.left.color == black && b.right.color == black){
+                                    t = f;
+                                    b.color = red;
+                                    continue;
+                                }
+                                if(f.left == t){
+                                    if(b.right.color == red){
+                                        b.right.color = black;
+                                        root = rotate(f, ll);
+                                        break
+                                    }else if(b.right.color == black && b.left.color == red){
+                                        b.color = b.left.color
+                                        b.left.color = black
+                                        root = rotate(b, rr);
+                                        continue
+                                    }
+                                }
+                                if(f.right == t){
+                                    if(b.left.color == red){
+                                        b.left.color = black;
+                                        root = rotate(f, rr);
+                                        break
+                                    }else if(b.left.color == black && b.right.color == red){
+                                        b.color = b.right.color
+                                        b.right.color = black
+                                        root = rotate(b, ll);
+                                        continue
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (p.parent.left == p)
+            {
+                p.parent.left = nullnode;
+            }
+            if (p.parent.right == p)
+            {
+                p.parent.right = nullnode;
+            }
+
+            return root;
+        }
+
+        function deep(root)
+        {
+            if(root == nullnode)
+            {
+                return 0
+            }
+            let l_deep = deep(root.left)+1
+            let r_deep = deep(root.right)+1
+            return l_deep >= r_deep ? l_deep : r_deep
+        }
+
+        function judge_nature_4(t)
+        {
+            if (t == nullnode)
+            {
+                return true;
+            }
+            if (t.color == red)
+            {
+                if (t.left != nullnode && t.left.color != black)
+                {
+                    return false;
+                }
+                if (t.right != nullnode && t.right.color != black)
+                {
+                    return false;
+                }
+            }
+            return judge_nature_4(t.left) && judge_nature_4(t.right);
+        }
+
+        function judge_nature_5_get_height(t)
+        {
+            if (t == nullnode)
+            {
+                return true;
+            }
+            l_height = judge_nature_5_get_height(t.left);
+            r_height = judge_nature_5_get_height(t.right);
+            return t.color == black ? Math.max(l_height, r_height) + 1 : Math.max(l_height, r_height);
+        }
+
+        function judge_nature_5(t)
+        {
+            if (t == nullnode)
+            {
+                return true;
+            }
+            let l_h = judge_nature_5_get_height(t.left);
+            let r_h = judge_nature_5_get_height(t.right);
+            if (l_h != r_h)
+            {
+                return false;
+            }
+            return judge_nature_5(t.left) && judge_nature_5(t.right);
+        }
+
+        var t = init()
+
+        var width = window.innerWidth
+        var height = window.innerHeight
+
+        var stage = new Konva.Stage({
+            container: 'box',
+            width: width,
+            height: height
+        })
+
+        var layer = new Konva.Layer()
+
+        class matrix_2d{
+            constructor(x,y){
+                this.x = x
+                this.y = y
+            }
+            subtraction(x2,y2){
+                return [this.x - x2, this.y - y2]
+            }
+            addition(x2,y2){
+                return [this.x + x2, this.y + y2]
+            }
+        }
+
+        // 根据公式计算圆环上的坐标
+        function ring_coordinate(option, bias, radius, angle)
+        {
+            if(option == 'x'){
+                let pox = (bias + radius * Math.cos(angle * Math.PI / 180))
+                return Math.round(pox)
+            }
+            if(option == 'y'){
+                let poy = (bias + radius * Math.sin(angle * Math.PI / 180))
+                return Math.round(poy)
+            }
+        }
+
+        function create_arrow(arx, ary, pox, poy){
+            let arrow = new Konva.Arrow({
+                x: arx,
+                y: ary,
+                points: [0, 0, pox, poy],
+                pointerLength: 10,
+                pointerWidth: 10,
+                fill: 'black',
+                stroke: 'black',
+                strokeWidth: 2
+            })
+            return arrow
+        }
+
+        function draw(root, cex, cey) {
+            if(root == nullnode)
+            {
+                return
+            }
+            if(root.parent == root){
+                cex = width / 2
+                cey = 50
+            }
+            if(root.parent.left == root){
+                // 根据深度偏移距离使得节点图形不重叠
+                cex = cex - (60 + (deep(root)-1)*30)
+                cey = cey + 60
+            }
+            if(root.parent.right == root){
+                cex = cex + (60 + (deep(root)-1)*30)
+                cey = cey + 60
+            }
+            if(root.color == red){
+                cecol = '#ff3535'
+            }
+            if(root.color == black){
+                cecol = '#000000'
+            }
+
+            var group_base = new Konva.Group({
+                draggable: true
+            })
+            var circle = new Konva.Circle({
+                x: cex,
+                y: cey,
+                radius: 20,
+                fill: cecol,
+                stroke: 'black',
+                strokeWidth: 1
+            })
+            var text = new Konva.Text({
+                x: circle.x() - circle.radius(),
+                y: circle.y() - circle.radius(),
+                text: root.data,
+                fontSize: 24,
+                fill: '#ffffff',
+                padding: 12 - (String(root.data).length - 1) * 4,
+                align: 'center',
+            })
+            group_base.add(circle)
+            group_base.add(text)
+            
+            root.group = group_base
+            layer.add(root.group)
+                
+            pa_cex = root.parent.group.children[0].attrs.x
+            pa_cey = root.parent.group.children[0].attrs.y
+            pa_rad = root.parent.group.children[0].attrs.radius
+            if(root.parent.left == root){
+                // 得到父亲和当前相对的圆环上的四个坐标
+                arx = ring_coordinate('x', pa_cex, pa_rad, 135) - 3
+                ary = ring_coordinate('y', pa_cey, pa_rad, 135) + 3
+                face_cex = ring_coordinate('x', cex, circle.radius(), -45) + 3
+                face_cey = ring_coordinate('y', cey, circle.radius(), -45) - 3
+                // 坐标矩阵相减得到箭头向量的终点坐标
+                let [pox, poy] = new matrix_2d(face_cex, face_cey).subtraction(arx, ary)
+                // 生成箭头图形赋值给当前的父亲节点
+                root.parent.left_arrow = create_arrow(arx,ary,pox,poy)
+                // 保存箭头向量
+                root.left_points = [arx,ary,pox,poy]
+
+                layer.add(root.parent.left_arrow)
+            }
+            if(root.parent.right == root){
+                arx = ring_coordinate('x', pa_cex, pa_rad, 45) + 3
+                ary = ring_coordinate('y', pa_cey, pa_rad, 45) + 3
+                face_cex = ring_coordinate('x', cex, circle.radius(), -135) - 3
+                face_cey = ring_coordinate('y', cey, circle.radius(), -135) - 3
+                let [pox, poy] = new matrix_2d(face_cex, face_cey).subtraction(arx, ary)
+                root.parent.right_arrow = create_arrow(arx,ary,pox,poy)
+                root.right_points = [arx,ary,pox,poy]
+
+                layer.add(root.parent.right_arrow)
+            }
+
+            draw(root.left, cex, cey)
+            draw(root.right, cex, cey)
+        }
+        
+        // 拖拽实现箭头连接二叉树的节点
+        function drag(t) {
+            if(t == nullnode || (t.left == nullnode && t.right == nullnode)) {
+                return
+            }
+            if(t.left != nullnode){
+                var [l_arx, l_ary, l_pox, l_poy] = t.left.left_points
+            }
+            if(t.right != nullnode){
+                var [r_arx, r_ary, r_pox, r_poy] = t.right.right_points
+            }
+            t.group.on('dragmove', () => {
+                if(t.left != nullnode){
+                    t.left_arrow.points([t.group.x(), t.group.y(), t.left.group.x() + l_pox, t.left.group.y() + l_poy]);
+                    // [l_arx, l_ary] 当前节点的圆环坐标
+                    // [l_pox, l_poy] 以[l_arx, l_ary]为原点的向量
+                    // [l_son_cex, l_son_cey] 当前节点的相对儿子节点的圆环坐标
+                    // [new_l_arx, new_l_ary] 移动后的当前节点的圆环新坐标
+                    // [new_l_pox, new_l_poy] 移动后的以[new_l_arx, new_l_ary]为原点的向量
+                    let [l_son_cex, l_son_cey] = new matrix_2d(l_arx, l_ary).addition(l_pox, l_poy)
+                    let [new_l_arx, new_l_ary] = new matrix_2d(l_arx, l_ary).addition(t.group.x(), t.group.y())
+                    let [new_l_pox, new_l_poy] = new matrix_2d(l_son_cex, l_son_cey).subtraction(new_l_arx, new_l_ary)
+                    t.left.left_points = [new_l_arx, new_l_ary, new_l_pox, new_l_poy]
+                }
+                
+                if(t.right != nullnode){
+                    t.right_arrow.points([t.group.x(), t.group.y(), t.right.group.x() + r_pox, t.right.group.y() + r_poy]);
+                    let [r_son_cex, r_son_cey] = new matrix_2d(r_arx, r_ary).addition(r_pox, r_poy)
+                    let [new_r_arx, new_r_ary] = new matrix_2d(r_arx, r_ary).addition(t.group.x(), t.group.y())
+                    let [new_r_pox, new_r_poy] = new matrix_2d(r_son_cex, r_son_cey).subtraction(new_r_arx, new_r_ary)
+                    t.right.right_points = [new_r_arx, new_r_ary, new_r_pox, new_r_poy]
+                }
+                
+                layer.batchDraw();
+            });
+            if(t.left != nullnode){
+                t.left.group.on('dragmove', () => {
+                    t.left_arrow.points([t.group.x(), t.group.y(), t.left.group.x() + l_pox, t.left.group.y() + l_poy]);
+                    layer.batchDraw();
+                });
+            }
+            if(t.right != nullnode){
+                t.right.group.on('dragmove', () => {
+                    t.right_arrow.points([t.group.x(), t.group.y(), t.right.group.x() + r_pox, t.right.group.y() + r_poy]);
+                    layer.batchDraw();
+                });
+            }
+            drag(t.left)
+            drag(t.right)
+        }
+
+        drag(t)
+        
+        stage.add(layer)
+
+        for (let index = 1; index <= 12; index++) {
+            t = insert(index, t)
+        }
+        t = del(1,t)
+        t = del(12,t)
+        t = del(11,t)
+
+        // Local complete time : Apr 18 2021
+        // Author: akinokoika
+    </script>
+</script>
+</body>
+</html>
