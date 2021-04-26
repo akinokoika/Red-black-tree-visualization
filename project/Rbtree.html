@@ -448,11 +448,18 @@
                                 {
                                     b = f.left;
                                 }
-
+                                
                                 if (b.left.color == black && b.right.color == black){
-                                    t = f;
-                                    b.color = red;
-                                    continue;
+                                    if (f.color == red){
+                                        b.color = red;
+                                        f.color = black;
+                                        break
+                                    }
+                                    if (f.color == black){
+                                        b.color = red;
+                                        t = f;
+                                        continue;
+                                    }
                                 }
                                 if (f.left == t){
                                     if (b.right.color == red){
@@ -460,10 +467,10 @@
                                         root = rotate(f, ll);
                                         break
                                     }else if (b.right.color == black && b.left.color == red){
-                                        b.color = b.left.color
-                                        b.left.color = black
+                                        b.color = b.left.color;
+                                        b.left.color = black;
                                         root = rotate(b, rr);
-                                        continue
+                                        continue;
                                     }
                                 }
                                 if (f.right == t){
@@ -472,10 +479,10 @@
                                         root = rotate(f, rr);
                                         break
                                     }else if (b.left.color == black && b.right.color == red){
-                                        b.color = b.right.color
-                                        b.right.color = black
+                                        b.color = b.right.color;
+                                        b.right.color = black;
                                         root = rotate(b, ll);
-                                        continue
+                                        continue;
                                     }
                                 }
                             }
