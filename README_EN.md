@@ -1,11 +1,11 @@
 # Red-black-tree-visualization
-Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss
+Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss, Big
 
 #### Introduction
 - Feature：visualization of red black tree
 - Function：complete insertion and deletion, and all tween animation version
 - Language：Javascript es6
-- Source：[Konva](https://github.com/konvajs/konva)，[TweenLite](https://greensock.com/tweenlite/)，[Vue3](https://github.com/vuejs/vue-next)，[Papercss](https://github.com/papercss/papercss)
+- Source：[Konva](https://github.com/konvajs/konva), [TweenLite](https://greensock.com/tweenlite/), [Vue3](https://github.com/vuejs/vue-next), [Papercss](https://github.com/papercss/papercss), [Big](https://github.com/MikeMcl/big.js)
 - Other：judgment of nature 4 and 5 of red black tree，matrix operation of coordinate vector
 
 #### Image

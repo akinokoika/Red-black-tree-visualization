@@ -1,12 +1,12 @@
 # Red-black-tree-visualization
-Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss
+Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss, Big
 ###### Readme english version: [README_EN](README_EN.md)
 
 #### 介绍
 - 效果：红黑树的可视化
 - 功能：完整的插入和删除，以及全部补间动画版本
 - 语言：Javascript es6
-- 开源：[Konva](https://github.com/konvajs/konva)，[TweenLite](https://greensock.com/tweenlite/)，[Vue3](https://github.com/vuejs/vue-next)，[Papercss](https://github.com/papercss/papercss)
+- 开源：[Konva](https://github.com/konvajs/konva)，[TweenLite](https://greensock.com/tweenlite/)，[Vue3](https://github.com/vuejs/vue-next)，[Papercss](https://github.com/papercss/papercss)，[Big](https://github.com/MikeMcl/big.js)
 - 其他：红黑树性质4和5的判断，坐标向量的矩阵运算
 
 #### 图片
