@@ -251,37 +251,6 @@
         return res
     }
 
-    console.log(new matrix_2by2(new vector(3, 0), new vector(1, 2)).eigenvalue())
-    console.log(new matrix_2by2(new vector(3, 0), new vector(1, 2)).eigenvector())
-    
-    console.log(new matrix_2by2(new vector(0, 1), new vector(-1, 0)).eigenvalue())
-    console.log(new matrix_2by2(new vector(0, 1), new vector(-1, 0)).eigenvector())
-
-    console.log(new matrix_2by2(new vector(1, 0), new vector(1, 1)).eigenvalue())
-    console.log(new matrix_2by2(new vector(1, 0), new vector(1, 1)).eigenvector())
-
-    console.log(new matrix_2by2(new vector(1, -2), new vector(3, 0)).linear_transformation(new vector(-1, 2)))
-    console.log(new matrix_2by2(new vector(0, 1), new vector(2, 0)).linear_composition(new matrix_2by2(new vector(1, 1), new vector(-2, 0))))
-    console.log(new matrix_2by2(new vector(0, 1), new vector(1, 1)).pow(2))
-    console.log(new matrix_2by2(new vector(0, 1), new vector(1, 1)).pow(3))
-    console.log(new matrix_2by2(new vector(3, 0), new vector(0, 2)).determinant())
-    console.log(new matrix_2by2(new vector(4, 2), new vector(7, 6)).inverse())
-    console.log(new matrix_2by2(new vector(4, 2), new vector(7, 6)).inverse().linear_composition(new matrix_2by2(new vector(4, 2), new vector(7, 6))))
-    console.log(new matrix_2by2(new vector(2, 1), new vector(-2, -1)).rank())
-    console.log(new matrix_2by2().dot_products(new vector(1, -2), new vector(4, 3)))
-    console.log(new matrix_2by2().cross_products_2by2(new vector(3, 0), new vector(0, 2)))
-    console.log(new matrix_2by2().cross_products_2by2(new vector(0, 2), new vector(3, 0)))
-
-    console.log(new matrix_2by2().dot_products_3by3(new vector(2, 7), 1, new vector(8, 2), 8))
-    console.log(new matrix_2by2().cross_products(new vector(0, 0), 2, new vector(0, 2), 0))
-
-    console.log(new matrix_2by2(new vector(0, 1), new vector(-1, 0)).linear_transformation_translate(new matrix_2by2(new vector(2, 1), new vector(-1, 1)), new vector(1, 2)))
-    console.log(new matrix_2by2(new vector(0, 1), new vector(-1, 0)).orthonormal())
-    console.log(new matrix_2by2(new vector(0, 1), new vector(-1, 0)).orthonormal(new vector(1,2)))
-    console.log(new matrix_2by2(new vector(2, 0), new vector(-1, 1)).cramers_rule(new vector(4, 2)))
-
-    console.log(matrix_polynomial_der([5,4,5,1],[0,1,2,3]))
-
     class rbnode{
         constructor(d,c,l,r,p){
             this.data = d
