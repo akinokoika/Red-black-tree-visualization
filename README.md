@@ -1,5 +1,5 @@
 # Red-black-tree-visualization
-Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss, Big
+Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss，Big
 ###### Readme english version: [README_EN](README_EN.md)
 
 #### 介绍
