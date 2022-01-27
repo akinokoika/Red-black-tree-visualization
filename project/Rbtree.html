@@ -1066,7 +1066,7 @@
 
     function change_color_cartoon(node, color = red, timeline, layer_local) {
         var Group_node = layer_local_find_group(node, layer_local)
-        var hex = (color == black) ? red_color : black_color;
+        var hex = (color == black) ? black_color : red_color;
         timeline.to(Group_node.children[0], 1, {
             konva: {
                 fill: hex,
