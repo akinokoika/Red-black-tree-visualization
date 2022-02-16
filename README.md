@@ -10,7 +10,7 @@ Red black tree visualization in JS，Konva，TimelineLite，Vue3，Papercss，Bi
 - 其他：红黑树性质4和5的判断，坐标向量的矩阵运算
 
 #### 在线
-<a href="https://akinokoika.github.io/Red-black-tree-visualization/project/Rbtree.html">红黑树可视化在线测试</a>
+<a href="https://akinokoika.github.io/Red-black-tree-visualization/project/Rbtree.html">web demo</a>
 
 #### 图片
 <p><img src="https://github.com/akinokoika/Red-black-tree-visualization/blob/main/image/Save_as.png" width="500px"></img></p>
